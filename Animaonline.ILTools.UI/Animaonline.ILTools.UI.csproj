@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BCC1F842-F3ED-4C6E-B5F4-F8687F2519E8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Animaonline.ILTools.UI</RootNamespace>
+    <AssemblyName>Animaonline.ILTools.UI</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\packages\AvalonEdit.4.3.1.9430\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Mono.CSharp\anonymous.cs" />
+    <Compile Include="Mono.CSharp\argument.cs" />
+    <Compile Include="Mono.CSharp\assembly.cs" />
+    <Compile Include="Mono.CSharp\assign.cs" />
+    <Compile Include="Mono.CSharp\async.cs" />
+    <Compile Include="Mono.CSharp\attribute.cs" />
+    <Compile Include="Mono.CSharp\cfold.cs" />
+    <Compile Include="Mono.CSharp\class.cs" />
+    <Compile Include="Mono.CSharp\codegen.cs" />
+    <Compile Include="Mono.CSharp\complete.cs" />
+    <Compile Include="Mono.CSharp\const.cs" />
+    <Compile Include="Mono.CSharp\constant.cs" />
+    <Compile Include="Mono.CSharp\context.cs" />
+    <Compile Include="Mono.CSharp\convert.cs" />
+    <Compile Include="Mono.CSharp\CryptoConvert.cs" />
+    <Compile Include="Mono.CSharp\cs-parser.cs" />
+    <Compile Include="Mono.CSharp\cs-tokenizer.cs" />
+    <Compile Include="Mono.CSharp\decl.cs" />
+    <Compile Include="Mono.CSharp\delegate.cs" />
+    <Compile Include="Mono.CSharp\doc-bootstrap.cs" />
+    <Compile Include="Mono.CSharp\doc.cs" />
+    <Compile Include="Mono.CSharp\driver.cs" />
+    <Compile Include="Mono.CSharp\dynamic.cs" />
+    <Compile Include="Mono.CSharp\ecore.cs" />
+    <Compile Include="Mono.CSharp\enum.cs" />
+    <Compile Include="Mono.CSharp\eval.cs" />
+    <Compile Include="Mono.CSharp\expression.cs" />
+    <Compile Include="Mono.CSharp\field.cs" />
+    <Compile Include="Mono.CSharp\flowanalysis.cs" />
+    <Compile Include="Mono.CSharp\generic.cs" />
+    <Compile Include="Mono.CSharp\import.cs" />
+    <Compile Include="Mono.CSharp\iterators.cs" />
+    <Compile Include="Mono.CSharp\lambda.cs" />
+    <Compile Include="Mono.CSharp\linq.cs" />
+    <Compile Include="Mono.CSharp\literal.cs" />
+    <Compile Include="Mono.CSharp\location.cs" />
+    <Compile Include="Mono.CSharp\membercache.cs" />
+    <Compile Include="Mono.CSharp\method.cs" />
+    <Compile Include="Mono.CSharp\modifiers.cs" />
+    <Compile Include="Mono.CSharp\module.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolFile.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolTable.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolWriter.cs" />
+    <Compile Include="Mono.CSharp\namespace.cs" />
+    <Compile Include="Mono.CSharp\nullable.cs" />
+    <Compile Include="Mono.CSharp\outline.cs" />
+    <Compile Include="Mono.CSharp\parameter.cs" />
+    <Compile Include="Mono.CSharp\pending.cs" />
+    <Compile Include="Mono.CSharp\property.cs" />
+    <Compile Include="Mono.CSharp\reflection.cs" />
+    <Compile Include="Mono.CSharp\report.cs" />
+    <Compile Include="Mono.CSharp\settings.cs" />
+    <Compile Include="Mono.CSharp\SourceMethodBuilder.cs" />
+    <Compile Include="Mono.CSharp\statement.cs" />
+    <Compile Include="Mono.CSharp\support.cs" />
+    <Compile Include="Mono.CSharp\typemanager.cs" />
+    <Compile Include="Mono.CSharp\typespec.cs" />
+    <Compile Include="Mono.CSharp\visit.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ILTools\Animaonline.ILTools.csproj">
+      <Project>{b87f5cdf-fc7b-4236-80a5-aaefe528d897}</Project>
+      <Name>Animaonline.ILTools</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Mono.CSharp\Mono.CSharp.csproj" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

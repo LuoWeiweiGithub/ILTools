@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{88E509D7-2E7C-42BF-919B-0E7AED8060A5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ILTools.Tests</RootNamespace>
+    <AssemblyName>ILTools.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HtmlAgilityPack\crc32.cs" />
+    <Compile Include="HtmlAgilityPack\EncodingFoundException.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlAttribute.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlAttributeCollection.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlCommentNode.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlDocument.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlDocument.PathMethods.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlDocument.Xpath.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlElementFlag.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlEntity.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNameTable.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNode.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNode.Xpath.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNodeCollection.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNodeNavigator.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlNodeType.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlParseError.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlParseErrorCode.cs" />
+    <Compile Include="HtmlAgilityPack\HtmlTextNode.cs" />
+    <Compile Include="HtmlAgilityPack\IOLibrary.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocument.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocumentCodeFragment.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocumentFragment.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocumentFragmentList.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocumentFragmentType.cs" />
+    <Compile Include="HtmlAgilityPack\MixedCodeDocumentTextFragment.cs" />
+    <Compile Include="HtmlAgilityPack\NameValuePair.cs" />
+    <Compile Include="HtmlAgilityPack\NameValuePairList.cs" />
+    <Compile Include="HtmlAgilityPack\Trace.cs" />
+    <Compile Include="HtmlAgilityPack\Trace.FullFramework.cs" />
+    <Compile Include="HtmlAgilityPack\Utilities.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Mono.CSharp\anonymous.cs" />
+    <Compile Include="Mono.CSharp\argument.cs" />
+    <Compile Include="Mono.CSharp\assembly.cs" />
+    <Compile Include="Mono.CSharp\assign.cs" />
+    <Compile Include="Mono.CSharp\async.cs" />
+    <Compile Include="Mono.CSharp\attribute.cs" />
+    <Compile Include="Mono.CSharp\cfold.cs" />
+    <Compile Include="Mono.CSharp\class.cs" />
+    <Compile Include="Mono.CSharp\codegen.cs" />
+    <Compile Include="Mono.CSharp\complete.cs" />
+    <Compile Include="Mono.CSharp\const.cs" />
+    <Compile Include="Mono.CSharp\constant.cs" />
+    <Compile Include="Mono.CSharp\context.cs" />
+    <Compile Include="Mono.CSharp\convert.cs" />
+    <Compile Include="Mono.CSharp\CryptoConvert.cs" />
+    <Compile Include="Mono.CSharp\cs-parser.cs" />
+    <Compile Include="Mono.CSharp\cs-tokenizer.cs" />
+    <Compile Include="Mono.CSharp\decl.cs" />
+    <Compile Include="Mono.CSharp\delegate.cs" />
+    <Compile Include="Mono.CSharp\doc-bootstrap.cs" />
+    <Compile Include="Mono.CSharp\doc.cs" />
+    <Compile Include="Mono.CSharp\driver.cs" />
+    <Compile Include="Mono.CSharp\dynamic.cs" />
+    <Compile Include="Mono.CSharp\ecore.cs" />
+    <Compile Include="Mono.CSharp\enum.cs" />
+    <Compile Include="Mono.CSharp\eval.cs" />
+    <Compile Include="Mono.CSharp\expression.cs" />
+    <Compile Include="Mono.CSharp\field.cs" />
+    <Compile Include="Mono.CSharp\flowanalysis.cs" />
+    <Compile Include="Mono.CSharp\generic.cs" />
+    <Compile Include="Mono.CSharp\import.cs" />
+    <Compile Include="Mono.CSharp\iterators.cs" />
+    <Compile Include="Mono.CSharp\lambda.cs" />
+    <Compile Include="Mono.CSharp\linq.cs" />
+    <Compile Include="Mono.CSharp\literal.cs" />
+    <Compile Include="Mono.CSharp\location.cs" />
+    <Compile Include="Mono.CSharp\membercache.cs" />
+    <Compile Include="Mono.CSharp\method.cs" />
+    <Compile Include="Mono.CSharp\modifiers.cs" />
+    <Compile Include="Mono.CSharp\module.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolFile.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolTable.cs" />
+    <Compile Include="Mono.CSharp\MonoSymbolWriter.cs" />
+    <Compile Include="Mono.CSharp\namespace.cs" />
+    <Compile Include="Mono.CSharp\nullable.cs" />
+    <Compile Include="Mono.CSharp\outline.cs" />
+    <Compile Include="Mono.CSharp\parameter.cs" />
+    <Compile Include="Mono.CSharp\pending.cs" />
+    <Compile Include="Mono.CSharp\property.cs" />
+    <Compile Include="Mono.CSharp\reflection.cs" />
+    <Compile Include="Mono.CSharp\report.cs" />
+    <Compile Include="Mono.CSharp\settings.cs" />
+    <Compile Include="Mono.CSharp\SourceMethodBuilder.cs" />
+    <Compile Include="Mono.CSharp\statement.cs" />
+    <Compile Include="Mono.CSharp\support.cs" />
+    <Compile Include="Mono.CSharp\typemanager.cs" />
+    <Compile Include="Mono.CSharp\typespec.cs" />
+    <Compile Include="Mono.CSharp\visit.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ILTools\Animaonline.ILTools.csproj">
+      <Project>{b87f5cdf-fc7b-4236-80a5-aaefe528d897}</Project>
+      <Name>Animaonline.ILTools</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Mono.CSharp\Mono.CSharp.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

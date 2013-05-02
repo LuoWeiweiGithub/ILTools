@@ -18,6 +18,7 @@ namespace Animaonline.ILTools
 
             //get IL bytes
             var ilBytes = methodBody.GetILAsByteArray();
+            //test
 
             var position = new int();
 

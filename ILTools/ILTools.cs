@@ -29,14 +29,14 @@ namespace Animaonline.ILTools
 
                 //fetch opcode
 
-                ushort value = ilBytes[position];
+                byte opCodeValue = ilBytes[position];
 
                 //increase position
                 position++;
 
                 //single byte opcode
-                if (value != 0xFE)
-                    instruction = new ILInstruction(OpCodesTable.SingleByteOpCodes[value]);
+                if (opCodeValue != 0xFE)
+                    instruction = new ILInstruction(OpCodesTable.SingleByteOpCodes[opCodeValue]);
 
                 /* 
                  * ---multi byte opcode---
@@ -45,9 +45,9 @@ namespace Animaonline.ILTools
                 else
                 {
                     //get the next opcode;
-                    value = /* 0xFE */ ilBytes[position];
+                    opCodeValue = /* 0xFE */ ilBytes[position];
                     position++;
-                    instruction = new ILInstruction(OpCodesTable.MultiByteOpCodes[value]);
+                    instruction = new ILInstruction(OpCodesTable.MultiByteOpCodes[opCodeValue]);
                 }
 
                 //set the offset

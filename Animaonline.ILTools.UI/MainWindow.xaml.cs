@@ -76,7 +76,7 @@ namespace Animaonline.ILTools.UI
                     ilList.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         ilList.Items.Clear();
-                        foreach (var ilInstruction in methodIL)
+                        foreach (var ilInstruction in methodIL.Instructions)
                             ilList.Items.Add(ilInstruction);
 
                         SetDescription("Press F5 to compile");

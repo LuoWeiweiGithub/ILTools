@@ -39,14 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnumOpCode.cs" />
-    <Compile Include="ILInstruction.cs" />
-    <Compile Include="ILTools.cs" />
-    <Compile Include="MethodInfoExtensions.cs" />
-    <Compile Include="OpCodeDescriber.cs" />
-    <Compile Include="OpCodesTable.cs" />
-    <Compile Include="OperandReader.cs" />
+    <Compile Include="Helpers\EnumOpCode.cs" />
+    <Compile Include="ILTools\ILInstruction.cs" />
+    <Compile Include="ILTools\ILTools.cs" />
+    <Compile Include="vCLR\VCLRExecContext.cs" />
+    <Compile Include="Extensions\MethodInfoExtensions.cs" />
+    <Compile Include="ILTools\MethodILInfo.cs" />
+    <Compile Include="Helpers\OpCodeDescriber.cs" />
+    <Compile Include="Helpers\OpCodesTable.cs" />
+    <Compile Include="ILTools\OperandReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="vCLR\VirtualCLR.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

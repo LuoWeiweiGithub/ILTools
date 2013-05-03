@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -7,14 +6,14 @@ namespace Animaonline.ILTools
 {
     public static class ILTools
     {
-        public static IEnumerable<ILInstruction> GetMethodIL(MethodInfo methodInfo)
+        public static MethodILInfo GetMethodIL(MethodInfo methodInfo)
         {
             var methodBody = methodInfo.GetMethodBody();
 
             if (methodBody == null)
                 throw new ArgumentException("Cannot process a method without a body");
 
-            var instructions = new List<ILInstruction>();
+            var ilInfo = new MethodILInfo(methodInfo);
 
             //get IL bytes
             var ilBytes = methodBody.GetILAsByteArray();
@@ -166,10 +165,10 @@ namespace Animaonline.ILTools
                         throw new Exception("Unknown operand type.");
                 }
 
-                instructions.Add(instruction);
+                ilInfo.Instructions.Add(instruction);
             }
 
-            return instructions.AsReadOnly();
+            return ilInfo;
         }
     }
 }

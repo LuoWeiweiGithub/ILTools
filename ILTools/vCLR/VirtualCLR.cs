@@ -18,6 +18,8 @@ namespace Animaonline.ILTools.vCLR
             var vCLRExecContext = new VCLRExecContext(methodILContext);
             var position = new int();
 
+            var offsetMappings = methodILContext.Instructions.ToDictionary(ilInstruction => ilInstruction.Offset, ilInstruction => methodILContext.Instructions.IndexOf(ilInstruction));
+
             //process the instructions
             while (position < methodILContext.Instructions.Count)
             {
@@ -26,9 +28,11 @@ namespace Animaonline.ILTools.vCLR
                 var targetOffset = ExecuteInstruction(instruction, vCLRExecContext, callerEvaluationStack);
 
                 //branch if requested
-                if (targetOffset > 0)
+                if (targetOffset != null)
+                {
                     //get the position by the given offset
-                    position = methodILContext.Instructions.IndexOf(methodILContext.Instructions.FirstOrDefault(w => w.Offset == targetOffset));
+                    position = offsetMappings[(int)targetOffset];
+                }
             }
         }
 
@@ -39,7 +43,7 @@ namespace Animaonline.ILTools.vCLR
         /// <param name="vCLRExecContext">The context of the executed method</param>
         /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
         /// <returns>Returns an offset (if branching was requested)</returns>
-        private int ExecuteInstruction(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack = null)
+        private object ExecuteInstruction(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack = null)
         {
             int i1;
             int i2;
@@ -213,7 +217,7 @@ namespace Animaonline.ILTools.vCLR
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
-            return -1;
+            return null;
         }
 
         private void Newobj(ILInstruction instruction, VCLRExecContext vCLRExecContext)

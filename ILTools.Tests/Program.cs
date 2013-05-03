@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -34,15 +35,18 @@ namespace ILTools.Tests
     {
         public void Start()
         {
-            var wc = new WebClient();
-            var html = wc.DownloadString("http://www.google.com");
+            var stp = new Stopwatch();
+            stp.Start();
 
-            Console.Write("Lookup:");
-            string lookup = Console.ReadLine();
-            var indexOf = html.IndexOf(lookup);
+            int result = 0;
 
-            if (indexOf > -1)
-                Console.WriteLine("Found a match at index {0}", indexOf);
+            for (int idx = 0; idx < 10000000; idx++)
+            {
+                result += 1;
+            }
+
+            stp.Stop();
+            Console.WriteLine("Execution completed, time elapsed: " + stp.Elapsed);
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -114,6 +115,13 @@ namespace Animaonline.ILTools.vCLR
                 #region branching operations
                 case EnumOpCode.Br_S:
                     return (int)instruction.Operand;
+                case EnumOpCode.Blt_S:
+                    //Transfers control to a target instruction (short form) if the first value is less than the second value.
+                    i2 = (int)vCLRExecContext.StackPop();
+                    i1 = (int)vCLRExecContext.StackPop();
+                    if (i1 < i2)
+                        return (int)instruction.Operand;
+                    break;
                 #endregion
                 #region comparison / condition operations
                 case EnumOpCode.Clt:
@@ -192,7 +200,7 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Box:
                     //Converts a value type to an object reference (type O).
                     o1 = vCLRExecContext.StackPop();
-                    o1 = Convert.ChangeType(o1, typeof(object));
+                    o1 = Convert.ChangeType(o1, instruction.Operand as Type);
                     vCLRExecContext.StackPush((object)o1);
                     break;
                 case EnumOpCode.Stfld:
@@ -269,7 +277,7 @@ namespace Animaonline.ILTools.vCLR
                     invocationParameters = new object[methodParameters.Length];
 
                     for (int i = methodParameters.Length - 1; i >= 0; i--)
-                        invocationParameters[i] = Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
+                        invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
                 }
 
                 if (invocationParameters != null)

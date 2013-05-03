@@ -3,11 +3,43 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Animaonline.ILTools.vCLR
 {
     public class VirtualCLR
     {
+        #region Public Constructor
+
+        public VirtualCLR()
+        {
+            OpCodeActions = new Func<ILInstruction, VCLRExecContext, object>[256];
+            OpCodeActions[OpCodes.Newobj.Value] = Newobj;
+            OpCodeActions[OpCodes.Nop.Value] = Nop;
+            OpCodeActions[OpCodes.Ret.Value] = Ret;
+            OpCodeActions[OpCodes.Stloc_0.Value] = Stloc_0;
+            OpCodeActions[OpCodes.Stloc_1.Value] = Stloc_1;
+            OpCodeActions[OpCodes.Stloc_2.Value] = Stloc_2;
+            OpCodeActions[OpCodes.Ldloc_0.Value] = Ldloc_0;
+            OpCodeActions[OpCodes.Ldloc_1.Value] = Ldloc_1;
+            OpCodeActions[OpCodes.Ldloc_2.Value] = Ldloc_2;
+            OpCodeActions[OpCodes.Callvirt.Value] = Callvirt;
+            OpCodeActions[OpCodes.Ldc_I4_0.Value] = Ldc_I4_0;
+            OpCodeActions[OpCodes.Ldc_I4_1.Value] = Ldc_I4_1;
+            OpCodeActions[OpCodes.Ldc_I4.Value] = Ldc_I4;
+            OpCodeActions[OpCodes.Br_S.Value] = Br_S;
+            OpCodeActions[OpCodes.Blt_S.Value] = Blt_S;
+            OpCodeActions[OpCodes.Add.Value] = Add;
+            OpCodeActions[OpCodes.Ldstr.Value] = Ldstr;
+            OpCodeActions[OpCodes.Box.Value] = Box;
+            OpCodeActions[OpCodes.Call.Value] = Call;
+            OpCodeActions[OpCodes.Ldarg_0.Value] = Ldarg_0;
+        }
+
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Executes a list of IL instructions.
         /// </summary>
@@ -25,7 +57,12 @@ namespace Animaonline.ILTools.vCLR
             {
                 var instruction = methodILContext.Instructions[position++];
 
-                var targetOffset = ExecuteInstruction(instruction, vCLRExecContext, callerEvaluationStack);
+                var targetOpCodeAction = OpCodeActions[instruction.OpCodeInfo.Value];
+
+                if (targetOpCodeAction == null)
+                    throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
+
+                var targetOffset = targetOpCodeAction(instruction, vCLRExecContext);
 
                 //branch if requested
                 if (targetOffset != null)
@@ -36,191 +73,147 @@ namespace Animaonline.ILTools.vCLR
             }
         }
 
-        /// <summary>
-        /// Executes the IL instruction, returns an offset if branching was requested.
-        /// </summary>
-        /// <param name="instruction">The instruction to execute</param>
-        /// <param name="vCLRExecContext">The context of the executed method</param>
-        /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
-        /// <returns>Returns an offset (if branching was requested)</returns>
-        private object ExecuteInstruction(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack = null)
+        #endregion
+
+        #region Private Properties
+
+        private Func<ILInstruction, VCLRExecContext, object>[] OpCodeActions { get; set; }
+
+        #endregion
+
+        #region OpCode Implementations
+
+        private object Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
-            int i1;
-            int i2;
-            object o1;
-            object o2;
-
-            switch (instruction.OpCode)
+            if (vCLRExecContext.MethodIL != null)
             {
-                case EnumOpCode.Nop:
-                    break; //do nothing
-                case EnumOpCode.Ret: //Returns from the current method, pushing a return value (if present) from the callee's evaluation stack onto the caller's evaluation stack.
-                    if (vCLRExecContext.EvaluationStack.Count > 0)
-                    {
-                        if (callerEvaluationStack != null)
-                        {
-                            var retVal = vCLRExecContext.StackPop();
+                //get 'this' instance context if not already done
+                if (!vCLRExecContext.HasObjectInstance)
+                    vCLRExecContext.ObjectInstance = Activator.CreateInstance(vCLRExecContext.MethodIL.MethodInfo.DeclaringType);
 
-                            callerEvaluationStack.Push(retVal);
-                        }
-                    }
-                    break;
-                #region numeric operations
-                case EnumOpCode.Ldc_I4:
-                    vCLRExecContext.StackPush(instruction.Operand);
-                    break;
-                case EnumOpCode.Ldc_I4_0:
-                    vCLRExecContext.StackPush(0);
-                    break;
-                case EnumOpCode.Ldc_I4_1:
-                    vCLRExecContext.StackPush(1);
-                    break;
-                case EnumOpCode.Ldc_I4_S:
-                    i1 = Convert.ToInt32(instruction.Operand);
-                    vCLRExecContext.StackPush(i1);
-                    break;
-                case EnumOpCode.Ldc_I4_M1:
-                    //Description: Pushes the integer value of -1 onto the evaluation stack as an int32.
-                    vCLRExecContext.StackPush(-1);
-                    break;
-                #endregion
-                #region locals operations
-                case EnumOpCode.Ldloc_S:
-                    vCLRExecContext.Ldloc(Convert.ToInt32(instruction.Operand));
-                    break;
-                case EnumOpCode.Ldloc_0:
-                    vCLRExecContext.Ldloc(0);
-                    break;
-                case EnumOpCode.Ldloc_1:
-                    vCLRExecContext.Ldloc(1);
-                    break;
-                case EnumOpCode.Ldloc_2:
-                    vCLRExecContext.Ldloc(2);
-                    break;
-                case EnumOpCode.Ldloc_3:
-                    vCLRExecContext.Ldloc(3);
-                    break;
-                case EnumOpCode.Stloc_S:
-                    vCLRExecContext.Stloc(Convert.ToInt32(instruction.Operand));
-                    break;
-                case EnumOpCode.Stloc_0:
-                    vCLRExecContext.Stloc(0);
-                    break;
-                case EnumOpCode.Stloc_1:
-                    vCLRExecContext.Stloc(1);
-                    break;
-                case EnumOpCode.Stloc_2:
-                    vCLRExecContext.Stloc(2);
-                    break;
-                case EnumOpCode.Stloc_3:
-                    vCLRExecContext.Stloc(3);
-                    break;
-                #endregion
-                #region branching operations
-                case EnumOpCode.Br_S:
-                    return (int)instruction.Operand;
-                case EnumOpCode.Blt_S:
-                    //Transfers control to a target instruction (short form) if the first value is less than the second value.
-                    i2 = (int)vCLRExecContext.StackPop();
-                    i1 = (int)vCLRExecContext.StackPop();
-                    if (i1 < i2)
-                        return (int)instruction.Operand;
-                    break;
-                #endregion
-                #region comparison / condition operations
-                case EnumOpCode.Clt:
-                    //Compares two values. If the first value is less than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-                    i2 = (int)vCLRExecContext.StackPop();
-                    i1 = (int)vCLRExecContext.StackPop();
-                    if (i1 < i2)
-                        vCLRExecContext.StackPush(1);
-                    else
-                        vCLRExecContext.StackPush(0);
-                    break;
-                case EnumOpCode.Cgt:
-                    //Compares two values. If the first value is greater than the second, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-                    i2 = (int)vCLRExecContext.StackPop();
-                    i1 = (int)vCLRExecContext.StackPop();
-                    if (i1 > i2)
-                        vCLRExecContext.StackPush(1);
-                    else
-                        vCLRExecContext.StackPush(0);
-                    break;
-                case EnumOpCode.Ceq:
-                    //Compares two values. If they are equal, the integer value 1 (int32) is pushed onto the evaluation stack; otherwise 0 (int32) is pushed onto the evaluation stack.
-                    o2 = vCLRExecContext.StackPop();
-                    o1 = vCLRExecContext.StackPop();
-                    if (o1.Equals(o2))
-                        vCLRExecContext.StackPush(1);
-                    else
-                        vCLRExecContext.StackPush(0);
-                    break;
-                case EnumOpCode.Brtrue_S:
-                    //Transfers control to a target instruction (short form) if value is true, not null, or non-zero.
-                    o1 = vCLRExecContext.StackPop();
-
-                    if (o1 != null)
-                    {
-                        if (o1 is bool && ((bool)o1)) //bool && true
-                            return (int)instruction.Operand;
-                        if (isNumericType(o1))
-                        {
-                            i1 = Convert.ToInt32(o1);
-                            if (i1 != 0)
-                                return (int)instruction.Operand;
-                        }
-                    }
-                    break;
-                #endregion
-                #region stack operations
-                case EnumOpCode.Ldstr:
-                    vCLRExecContext.StackPush(instruction.Operand);
-                    break;
-                #endregion
-                #region mathematical operations
-                case EnumOpCode.Add:
-                    i2 = (int)vCLRExecContext.StackPop();
-                    i1 = (int)vCLRExecContext.StackPop();
-
-                    vCLRExecContext.StackPush(i1 + i2);
-                    break;
-                #endregion
-                case EnumOpCode.Call:
-                    Call(instruction, vCLRExecContext);
-                    break;
-                case EnumOpCode.Callvirt:
-                    Callvirt(instruction, vCLRExecContext);
-                    break;
-                case EnumOpCode.Ldarg_0:
-                    if (vCLRExecContext.MethodIL != null)
-                    {
-                        //get 'this' instance context if not already done
-                        if (!vCLRExecContext.HasObjectInstance)
-                            vCLRExecContext.ObjectInstance = Activator.CreateInstance(vCLRExecContext.MethodIL.MethodInfo.DeclaringType);
-
-                        vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
-                    }
-                    break;
-                case EnumOpCode.Box:
-                    //Converts a value type to an object reference (type O).
-                    o1 = vCLRExecContext.StackPop();
-                    o1 = Convert.ChangeType(o1, instruction.Operand as Type);
-                    vCLRExecContext.StackPush((object)o1);
-                    break;
-                case EnumOpCode.Stfld:
-                    Stfld(instruction, vCLRExecContext);
-                    break;
-                case EnumOpCode.Newobj:
-                    Newobj(instruction, vCLRExecContext);
-                    break;
-                default:
-                    throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
+                vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
             }
 
             return null;
         }
 
-        private void Newobj(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        private object Box(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            object o1 = vCLRExecContext.StackPop();
+            o1 = Convert.ChangeType(o1, instruction.Operand as Type);
+            vCLRExecContext.StackPush((object)o1);
+
+            return null;
+        }
+
+        private object Ldstr(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(instruction.Operand);
+            return null;
+        }
+
+        private object Add(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            int i2 = (int)vCLRExecContext.StackPop();
+            int i1 = (int)vCLRExecContext.StackPop();
+
+            vCLRExecContext.StackPush(i1 + i2);
+
+            return null;
+        }
+
+        private object Blt_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Transfers control to a target instruction (short form) if the first value is less than the second value.
+            int i2 = (int)vCLRExecContext.StackPop();
+            int i1 = (int)vCLRExecContext.StackPop();
+            if (i1 < i2)
+                return (int)instruction.Operand;
+
+            return null;
+        }
+
+        private object Br_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            return (int)instruction.Operand;
+        }
+
+        private object Ldc_I4(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(instruction.Operand);
+            return null;
+        }
+
+        private object Ldc_I4_0(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(0);
+            return null;
+        }
+
+        private object Ldc_I4_1(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(1);
+            return null;
+        }
+
+        private object Ldloc_0(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Ldloc(0);
+            return null;
+        }
+
+        private object Ldloc_1(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Ldloc(1);
+            return null;
+        }
+
+        private object Ldloc_2(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Ldloc(2);
+            return null;
+        }
+
+        private object Stloc_0(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Stloc(0);
+            return null;
+        }
+
+        private object Stloc_1(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Stloc(1);
+            return null;
+        }
+
+        private object Stloc_2(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Stloc(2);
+            return null;
+        }
+
+        private object Ret(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            if (vCLRExecContext.EvaluationStack.Count > 0)
+            {
+                return null; //TODO
+                //if (callerEvaluationStack != null)
+                //{
+                //    var retVal = vCLRExecContext.StackPop();
+
+                //    callerEvaluationStack.Push(retVal);
+                //}
+            }
+
+            return null;
+        }
+
+        private object Nop(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            return null;
+        }
+
+        private object Newobj(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
             var targetCtor = (ConstructorInfo)instruction.Operand;
 
@@ -240,6 +233,8 @@ namespace Animaonline.ILTools.vCLR
 
             if (ctorInstance != null)
                 vCLRExecContext.StackPush(ctorInstance);
+
+            return null;
         }
 
         private void Stfld(ILInstruction instruction, VCLRExecContext vCLRExecContext)
@@ -255,7 +250,7 @@ namespace Animaonline.ILTools.vCLR
         /// </summary>
         /// <param name="instruction">The instruction being executed</param>
         /// <param name="vCLRExecContext">The context of the executed method</param>
-        private void Call(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        private object Call(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
             var methodInfo = instruction.Operand as MethodInfo;
 
@@ -292,10 +287,12 @@ namespace Animaonline.ILTools.vCLR
                 if (methodReturnValue != null)
                     vCLRExecContext.StackPush(methodReturnValue);
             }
+
+            return null;
         }
 
         //Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
-        private void Callvirt(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        private object Callvirt(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
             var methodInfo = instruction.Operand as MethodInfo;
 
@@ -332,7 +329,13 @@ namespace Animaonline.ILTools.vCLR
                 if (methodReturnValue != null)
                     vCLRExecContext.StackPush(methodReturnValue);
             }
+
+            return null;
         }
+
+        #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Determines if the input object is a numeric type.
@@ -359,5 +362,7 @@ namespace Animaonline.ILTools.vCLR
                     return false;
             }
         }
+
+        #endregion
     }
 }

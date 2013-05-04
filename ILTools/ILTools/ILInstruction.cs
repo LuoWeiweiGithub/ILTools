@@ -11,21 +11,16 @@ namespace Animaonline.ILTools
         public ILInstruction(OpCode opCode)
         {
             this.OpCodeInfo = opCode;
+            this.OpCode = (EnumOpCode)opCode.Value;
         }
 
         #endregion
 
         #region Public Properties
 
-        public EnumOpCode OpCode
-        {
-            get
-            {
-                return (EnumOpCode)OpCodeInfo.Value;
-            }
-        }
+        public EnumOpCode OpCode { get; private set; }
 
-        public OpCode OpCodeInfo { get; set; }
+        public OpCode OpCodeInfo { get; private set; }
 
         public object Operand { get; set; }
 

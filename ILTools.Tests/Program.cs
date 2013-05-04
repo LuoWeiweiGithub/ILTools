@@ -16,7 +16,7 @@ namespace ILTools.Tests
          */
         static void Main(string[] args)
         {
-            var methodInfo = typeof(TestClass).GetMethod("TestMethodA");
+            var methodInfo = typeof(TestClass2).GetMethod("Start");
             var methodIL = methodInfo.GetInstructions();
 
             foreach (var instruction in methodIL.Instructions)

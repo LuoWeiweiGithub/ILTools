@@ -175,13 +175,55 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Brtrue:
                     return Brtrue(instruction, vCLRExecContext);
                     break;
-                //case EnumOpCode.Newarr: 
-                //break;
+                case EnumOpCode.Leave_S:
+                    return Leave_S(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldlen:
+                    Ldlen(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Conv_I4:
+                    Conv_I4(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldelem_Ref:
+                    Ldelem_Ref(instruction, vCLRExecContext);
+                    break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Loads the element containing an object reference at a specified array index onto the top of the evaluation stack as type O (object reference).
+        /// </summary>
+        private void Ldelem_Ref(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var index = (int)vCLRExecContext.StackPop();
+            var array = (Array)vCLRExecContext.StackPop();
+            var value = array.GetValue(index);
+
+            vCLRExecContext.StackPush(value);
+        }
+
+        private void Conv_I4(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Description: Converts the value on top of the evaluation stack to int32.
+            var value = vCLRExecContext.StackPop();
+            var i1 = Convert.ToInt32(value);
+            vCLRExecContext.StackPush(i1);
+        }
+
+        private void Ldlen(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var array = (Array)vCLRExecContext.StackPop();
+            vCLRExecContext.StackPush(array.Length);
+        }
+
+        private object Leave_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Description: Exits a protected region of code, unconditionally transferring control to a target instruction (short form).
+            return instruction.Operand;
         }
 
         private void Ldc_I4_3(ILInstruction instruction, VCLRExecContext vCLRExecContext)

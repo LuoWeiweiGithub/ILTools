@@ -15,7 +15,7 @@ namespace ILTools.Tests
          * Entry Point
          */
         static void Main(string[] args)
-        {
+        { 
             var methodInfo = typeof(TestClass2).GetMethod("Start");
             var methodIL = methodInfo.GetInstructions();
 
@@ -26,6 +26,7 @@ namespace ILTools.Tests
             Console.ReadLine();
 
             //execute the instructions inside the virtual CLR.
+            Console.WriteLine("--Interpreter-- (compile in Release mode for best performance.)");
             var v_clr = new VirtualCLR();
             v_clr.ExecuteILMethod(methodIL);
         }
@@ -34,7 +35,7 @@ namespace ILTools.Tests
     public class TestClass2
     {
         public void Start()
-        { 
+        {
             var stp = new Stopwatch();
             stp.Start();
 
@@ -46,6 +47,7 @@ namespace ILTools.Tests
             }
 
             stp.Stop();
+
             Console.WriteLine("Execution completed, time elapsed: " + stp.Elapsed);
         }
     }

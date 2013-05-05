@@ -52,6 +52,9 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Ret: //Returns from the current method, pushing a return value (if present) from the callee's evaluation stack onto the caller's evaluation stack.
                     Ret(instruction, vCLRExecContext, callerEvaluationStack);
                     break;
+                case EnumOpCode.Blt:
+                    Blt(instruction, vCLRExecContext);
+                    break;
                 case EnumOpCode.Pop:
                     Pop(instruction, vCLRExecContext);
                     break;
@@ -64,8 +67,29 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Ldc_I4_1:
                     Ldc_I4_1(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Ldc_I4_2:
+                    Ldc_I4_2(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_3:
+                    Ldc_I4_3(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_4:
+                    Ldc_I4_4(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_5:
+                    Ldc_I4_5(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_7:
+                    Ldc_I4_7(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_8:
+                    Ldc_I4_8(instruction, vCLRExecContext);
+                    break;
                 case EnumOpCode.Ldc_I4_M1:
                     Ldc_I4_M1(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldc_I4_S:
+                    Ldc_I4_S(instruction, vCLRExecContext);
                     break;
                 case EnumOpCode.Ldloc_S:
                     Ldloc_S(instruction, vCLRExecContext);
@@ -79,6 +103,9 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Ldloc_2:
                     Ldloc_2(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Ldloc_3:
+                    Ldloc_3(instruction, vCLRExecContext);
+                    break;
                 case EnumOpCode.Stloc_S:
                     Stloc(instruction, vCLRExecContext);
                     break;
@@ -90,6 +117,9 @@ namespace Animaonline.ILTools.vCLR
                     break;
                 case EnumOpCode.Stloc_2:
                     Stloc_2(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Stloc_3:
+                    Stloc_3(instruction, vCLRExecContext);
                     break;
                 case EnumOpCode.Br_S:
                     return Br_S(instruction, vCLRExecContext);
@@ -103,6 +133,9 @@ namespace Animaonline.ILTools.vCLR
                     break;
                 case EnumOpCode.Ceq:
                     Ceq(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Br:
+                    return Br(instruction, vCLRExecContext);
                     break;
                 case EnumOpCode.Brtrue_S:
                     return Brtrue_S(instruction, vCLRExecContext);
@@ -130,11 +163,113 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Newobj:
                     Newobj(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Dup:
+                    Dup(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Newarr:
+                    Newarr(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Stelem_Ref:
+                    Stelem_Ref(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Brtrue:
+                    return Brtrue(instruction, vCLRExecContext);
+                    break;
+                //case EnumOpCode.Newarr: 
+                //break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
             return null;
+        }
+
+        private void Ldc_I4_3(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(3);
+        }
+
+        private void Ldc_I4_2(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(2);
+        }
+
+        private object Brtrue(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Transfers control to a target instruction (short form) if value is true, not null, or non-zero.
+            var o1 = vCLRExecContext.StackPop();
+
+            if (o1 != null)
+            {
+                if (o1 is bool && ((bool)o1)) //bool && true
+                    return (int)instruction.Operand;
+                if (isNumericType(o1))
+                {
+                    var i1 = Convert.ToInt32(o1);
+                    if (i1 != 0)
+                        return (int)instruction.Operand;
+                }
+            }
+
+            return null;
+        }
+
+        private void Stelem_Ref(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var value = vCLRExecContext.StackPop();
+            var index = (int)vCLRExecContext.StackPop();
+            var array = (Array)vCLRExecContext.StackPop();
+
+            array.SetValue(value, index);
+        }
+
+        private void Ldloc_3(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Ldloc(3);
+        }
+
+        private void Stloc_3(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.Stloc(3);
+        }
+
+        private void Newarr(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Description: Pushes an object reference to a new zero-based, one-dimensional array whose elements are of a specific type onto the evaluation stack.
+            var length = (int)vCLRExecContext.StackPop();
+            var arrInst = Array.CreateInstance((Type)instruction.Operand, length);
+            vCLRExecContext.StackPush(arrInst);
+        }
+
+        private object Br(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            return (int)instruction.Operand;
+        }
+
+        private void Ldc_I4_7(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(7);
+        }
+
+        private void Ldc_I4_5(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(5);
+        }
+
+        private void Ldc_I4_8(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(8);
+        }
+
+        private void Dup(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var cpy = vCLRExecContext.EvaluationStack.Peek();
+            vCLRExecContext.StackPush(cpy);
+        }
+
+        private void Ldc_I4_4(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(4);
         }
 
         private void Pop(ILInstruction instruction, VCLRExecContext vCLRExecContext)
@@ -237,6 +372,16 @@ namespace Animaonline.ILTools.vCLR
                 vCLRExecContext.StackPush(1);
             else
                 vCLRExecContext.StackPush(0);
+        }
+
+        private object Blt(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var i2 = (int)vCLRExecContext.StackPop();
+            var i1 = (int)vCLRExecContext.StackPop();
+            if (i1 < i2)
+                return (int)instruction.Operand;
+
+            return null;
         }
 
         private object Blt_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)

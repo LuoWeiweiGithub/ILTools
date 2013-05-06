@@ -19,7 +19,7 @@ namespace ILTools.Tests
          */
         static void Main(string[] args)
         {
-            var methodInfo = typeof(TestClass2).GetMethod("start2");
+            var methodInfo = typeof(FieldsTest).GetMethod("Main");
             var methodIL = methodInfo.GetInstructions();
 
             Console.WriteLine("Press any key to execute");
@@ -32,27 +32,33 @@ namespace ILTools.Tests
         }
     }
 
-    public class TestClass2
+    public class FieldsTest
     {
-        private object field;
-
-        public void start2()
+        void Main()
         {
-            field = setField();
+            var fieldValue = Console.ReadLine();
+            
+            setField(fieldValue);
+
             printField();
         }
 
-        private object setField()
+        public object field;
+
+        public void setField(object value)
         {
-            return DateTime.Now;
+            field = value;
         }
 
         public void printField()
         {
             Console.WriteLine(field);
         }
+    }
 
-        public void Start()
+    public class TestClass
+    {
+        public void Benchmark()
         {
             var stp = new Stopwatch();
             stp.Start();
@@ -67,34 +73,6 @@ namespace ILTools.Tests
             stp.Stop();
 
             Console.WriteLine("Execution completed, time elapsed: " + stp.Elapsed);
-        }
-    }
-
-    public class TestClass
-    {
-        public void TestMethodA()
-        {
-            Console.WriteLine("TestMethodA");
-
-            Console.Write("A:");
-            int a = int.Parse(Console.ReadLine());
-
-            Console.Write("B:");
-            int b = int.Parse(Console.ReadLine());
-
-            Add(a, b);
-
-            Console.WriteLine("Done");
-            Console.ReadLine();
-        }
-
-        public void Add(int a, int b)
-        {
-            Console.WriteLine("Adding A to B");
-
-            int c = a + b;
-
-            Console.WriteLine("Result: " + c);
         }
     }
 }

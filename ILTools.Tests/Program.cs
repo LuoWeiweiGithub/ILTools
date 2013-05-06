@@ -19,34 +19,41 @@ namespace ILTools.Tests
          */
         static void Main(string[] args)
         {
-            var methodInfo = typeof(TestClass2).GetMethod("Start");
+            var methodInfo = typeof(TestClass2).GetMethod("start2");
             var methodIL = methodInfo.GetInstructions();
-
-            foreach (var instruction in methodIL.Instructions)
-                Console.WriteLine(instruction);
 
             Console.WriteLine("Press any key to execute");
             Console.ReadLine();
 
             //execute the instructions inside the virtual CLR.
             Console.WriteLine("--Interpreter-- (compile in Release mode for best performance.)");
-            var v_clr = new VirtualCLR();
+            var v_clr = new VirtualCLR(vCLRScope.Class);
             v_clr.ExecuteILMethod(methodIL);
         }
     }
 
     public class TestClass2
     {
+        private object field;
+
+        public void start2()
+        {
+            field = setField();
+            printField();
+        }
+
+        private object setField()
+        {
+            return DateTime.Now;
+        }
+
+        public void printField()
+        {
+            Console.WriteLine(field);
+        }
+
         public void Start()
         {
-            var cEntries = Directory.GetFileSystemEntries(@"C:\");
-
-            var matches = cEntries.Where(w => w.ToUpper().Contains("SQL"));
-
-            foreach (var match in matches)
-                Console.WriteLine(match);
-
-            return;
             var stp = new Stopwatch();
             stp.Start();
 

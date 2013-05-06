@@ -18,7 +18,7 @@ namespace Animaonline.ILTools.vCLR
         #region Public Properties
 
         public MethodILInfo MethodIL { get; set; }
-        public object ObjectInstance { get; set; }
+        public object ObjectInstance;
         public Stack<object> EvaluationStack { get; set; }
         public object[] MethodLocals { get; set; }
 
@@ -35,6 +35,11 @@ namespace Animaonline.ILTools.vCLR
         #region Public Methods
 
         public void StackPush(object obj)
+        {
+            EvaluationStack.Push(obj);
+        }
+
+        public void StackPushRef(ref object obj)
         {
             EvaluationStack.Push(obj);
         }

@@ -8,6 +8,30 @@ namespace Animaonline.ILTools.vCLR
 {
     public class VirtualCLR
     {
+        #region Public Constructor
+
+        /// <summary>
+        /// Creates a new instance of VirtualCLR
+        /// </summary>
+        /// <param name="scope">The scope in which the methods will be executed</param>
+        public VirtualCLR(vCLRScope scope = vCLRScope.Method)
+        {
+            if (scope == vCLRScope.Global)
+                throw new NotImplementedException();
+
+            this.Scope = scope;
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public vCLRScope Scope { get; private set; }
+
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Executes a list of IL instructions.
         /// </summary>
@@ -15,7 +39,12 @@ namespace Animaonline.ILTools.vCLR
         /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
         public void ExecuteILMethod(MethodILInfo methodILContext, Stack<object> callerEvaluationStack = null)
         {
+            Console.WriteLine("\r\n--Executing Instructions--\r\n");
+            foreach (var instruction in methodILContext.Instructions)
+                Console.WriteLine(instruction);
+
             var vCLRExecContext = new VCLRExecContext(methodILContext);
+
             var position = new int();
 
             var offsetMappings = methodILContext.Instructions.ToDictionary(ilInstruction => ilInstruction.Offset, ilInstruction => methodILContext.Instructions.IndexOf(ilInstruction));
@@ -35,6 +64,10 @@ namespace Animaonline.ILTools.vCLR
                 }
             }
         }
+
+        #endregion
+
+        #region OpCode Implementations
 
         /// <summary>
         /// Executes the IL instruction, returns an offset if branching was requested.
@@ -152,7 +185,16 @@ namespace Animaonline.ILTools.vCLR
                     Callvirt(instruction, vCLRExecContext);
                     break;
                 case EnumOpCode.Ldarg_0:
-                    Ldarg_0(instruction, vCLRExecContext);
+                    Ldarg_0(instruction, vCLRExecContext, callerEvaluationStack);
+                    break;
+                case EnumOpCode.Ldarg_1:
+                    Ldarg_1(instruction, vCLRExecContext, callerEvaluationStack);
+                    break;
+                case EnumOpCode.Ldarg_2:
+                    Ldarg_2(instruction, vCLRExecContext, callerEvaluationStack);
+                    break;
+                case EnumOpCode.Ldarg_3:
+                    Ldarg_3(instruction, vCLRExecContext, callerEvaluationStack);
                     break;
                 case EnumOpCode.Box:
                     Box(instruction, vCLRExecContext);
@@ -193,6 +235,9 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Ldsfld:
                     Ldsfld(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Ldsflda:
+                    Ldsflda(instruction, vCLRExecContext);
+                    break;
                 case EnumOpCode.Ldnull:
                     Ldnull(instruction, vCLRExecContext);
                     break;
@@ -202,20 +247,49 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Stsfld:
                     Stsfld(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Ldfld:
+                    Ldfld(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Volatile:
+                    Volatile(instruction, vCLRExecContext);
+                    break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
             return null;
         }
+
+        /// <summary>
+        /// Finds the value of a field in the object whose reference is currently on the evaluation stack.
+        /// </summary>
+        private void Ldfld(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var o1 = vCLRExecContext.StackPop();
+
+            var fieldInfo = (FieldInfo)instruction.Operand;
+
+            var value = fieldInfo.GetValue(o1);
+
+            vCLRExecContext.StackPush(value);
+        }
+
+        /// <summary>
+        /// Specifies that an address currently atop the evaluation stack might be volatile, and the results of reading that location cannot be cached or that multiple stores to that location cannot be suppressed.
+        /// </summary>
+        private void Volatile(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Replaces the value of a static field with a value from the evaluation stack.
         /// </summary>
         private void Stsfld(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
             var fieldInfo = (FieldInfo)instruction.Operand;
-            
-            var o1= vCLRExecContext.StackPop();
+
+            var o1 = vCLRExecContext.StackPop();
 
             fieldInfo.SetValue(vCLRExecContext, o1);
         }
@@ -238,6 +312,18 @@ namespace Animaonline.ILTools.vCLR
         private void Ldnull(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
             vCLRExecContext.StackPush(null);
+        }
+
+        /// <summary>
+        /// Pushes the address of a static field onto the evaluation stack.
+        /// </summary> 
+        private void Ldsflda(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var fieldInfo = (FieldInfo)instruction.Operand;
+
+            var o1 = fieldInfo.FieldHandle.Value;
+
+            vCLRExecContext.StackPush(o1);
         }
 
         /// <summary>
@@ -416,7 +502,7 @@ namespace Animaonline.ILTools.vCLR
             vCLRExecContext.StackPush((object)o1);
         }
 
-        private void Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        private void Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
         {
             if (vCLRExecContext.MethodIL != null)
             {
@@ -426,6 +512,27 @@ namespace Animaonline.ILTools.vCLR
 
                 vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
             }
+        }
+
+        private void Ldarg_1(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        {
+            var o1 = callerEvaluationStack.Reverse().ToArray()[0];
+
+            vCLRExecContext.StackPush(o1);
+        }
+
+        private void Ldarg_2(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        {
+            var o1 = callerEvaluationStack.Reverse().ToArray()[1];
+
+            vCLRExecContext.StackPush(o1);
+        }
+
+        private void Ldarg_3(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        {
+            var o1 = callerEvaluationStack.Reverse().ToArray()[2];
+
+            vCLRExecContext.StackPush(o1);
         }
 
         private void Add(ILInstruction instruction, VCLRExecContext vCLRExecContext)
@@ -635,18 +742,45 @@ namespace Animaonline.ILTools.vCLR
         /// <param name="vCLRExecContext">The context of the executed method</param>
         private void Call(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
+            var ownerMethod = vCLRExecContext.MethodIL.MethodInfo;
             var methodInfo = instruction.Operand as MethodInfo;
+            var methodParameters = methodInfo.GetParameters();
+            object[] invocationParameters = null;
+            //The object on which to invoke the method or constructor. If a method is static, this argument is ignored.
+            object invocationTargetInstance = null;
 
             if (methodInfo != null)
             {
+                if (Scope == vCLRScope.Class)
+                {
+                    //check if the target method resides in the same class as the entry method
+                    if (ownerMethod.DeclaringType.Equals(methodInfo.DeclaringType))
+                    {
+                        //go deeper
+
+                        if (methodParameters.Length > 0)
+                        {
+                            invocationParameters = new object[methodParameters.Length];
+
+                            for (int i = methodParameters.Length - 1; i >= 0; i--)
+                                invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
+
+                            foreach (var param in invocationParameters)
+                                vCLRExecContext.StackPush(param);
+                        }
+
+                        if (!methodInfo.IsStatic)
+                        {
+                            //get invocation instance target
+                            invocationTargetInstance = vCLRExecContext.StackPop();
+                        }
+
+                        ExecuteILMethod(methodInfo.GetInstructions(), vCLRExecContext.EvaluationStack);
+                        return;
+                    }
+                }
+
                 object methodReturnValue;
-
-                var methodParameters = methodInfo.GetParameters();
-
-                object[] invocationParameters = null;
-
-                //The object on which to invoke the method or constructor. If a method is static, this argument is ignored.
-                object invocationTargetInstance = null;
 
                 if (methodParameters.Length > 0)
                 {
@@ -712,6 +846,10 @@ namespace Animaonline.ILTools.vCLR
             }
         }
 
+        #endregion
+
+        #region Helper Methods
+
         /// <summary>
         /// Determines if the input object is a numeric type.
         /// </summary>
@@ -737,5 +875,7 @@ namespace Animaonline.ILTools.vCLR
                     return false;
             }
         }
+
+        #endregion
     }
 }

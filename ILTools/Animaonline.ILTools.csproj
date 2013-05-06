@@ -49,6 +49,7 @@
     <Compile Include="Helpers\OpCodesTable.cs" />
     <Compile Include="ILTools\OperandReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="vCLR\vCLRScope.cs" />
     <Compile Include="vCLR\VirtualCLR.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -19,14 +19,15 @@ namespace ILTools.Tests
          */
         static void Main(string[] args)
         {
-            var methodInfo = typeof(FieldsTest).GetMethod("Main");
+            Console.Title = "vCLR - (compile in Release mode for best performance.)";
+
+            var methodInfo = typeof(TestClass).GetMethod("Benchmark");
             var methodIL = methodInfo.GetInstructions();
 
             Console.WriteLine("Press any key to execute");
             Console.ReadLine();
 
             //execute the instructions inside the virtual CLR.
-            Console.WriteLine("--Interpreter-- (compile in Release mode for best performance.)");
             var v_clr = new VirtualCLR(vCLRScope.Class);
             v_clr.ExecuteILMethod(methodIL);
         }
@@ -37,7 +38,7 @@ namespace ILTools.Tests
         void Main()
         {
             var fieldValue = Console.ReadLine();
-            
+
             setField(fieldValue);
 
             printField();

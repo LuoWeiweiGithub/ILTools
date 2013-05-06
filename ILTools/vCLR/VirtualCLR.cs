@@ -187,9 +187,32 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Ldelem_Ref:
                     Ldelem_Ref(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Brfalse_S:
+                    return Brfalse_S(instruction, vCLRExecContext);
+                    break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Transfers control to a target instruction if value is false, a null reference, or zero.
+        /// </summary>
+        private object Brfalse_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var o1 = vCLRExecContext.StackPop();
+
+            if (o1 != null)
+                if (isNumericType(o1))
+                {
+                    var i1 = Convert.ToInt32(o1);
+                    if (i1 == 0)
+                        return (int)instruction.Operand;
+                }
+                else
+                    return (int)instruction.Operand;
 
             return null;
         }
@@ -523,8 +546,17 @@ namespace Animaonline.ILTools.vCLR
             {
                 invocationParameters = new object[ctorParameters.Length];
 
-                for (int i = 0; i < ctorParameters.Length; i++)
-                    invocationParameters[i] = vCLRExecContext.StackPop();
+                for (int i = ctorParameters.Length - 1; i >= 0; i--)
+                {
+                    var targetType = ctorParameters[i];
+
+                    var o1 = vCLRExecContext.StackPop();
+
+                    if (targetType.ParameterType == typeof(Boolean))
+                        invocationParameters[i] = Convert.ToBoolean(o1);
+                    else
+                        invocationParameters[i] = o1;
+                }
             }
 
             var ctorInstance = targetCtor.Invoke(invocationParameters);

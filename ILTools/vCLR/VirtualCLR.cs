@@ -190,11 +190,66 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Brfalse_S:
                     return Brfalse_S(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Ldsfld:
+                    Ldsfld(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldnull:
+                    Ldnull(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ldftn:
+                    Ldftn(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Stsfld:
+                    Stsfld(instruction, vCLRExecContext);
+                    break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
             return null;
+        }
+        /// <summary>
+        /// Replaces the value of a static field with a value from the evaluation stack.
+        /// </summary>
+        private void Stsfld(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var fieldInfo = (FieldInfo)instruction.Operand;
+            
+            var o1= vCLRExecContext.StackPop();
+
+            fieldInfo.SetValue(vCLRExecContext, o1);
+        }
+
+        /// <summary>
+        /// Pushes an unmanaged pointer (type native int) to the native code implementing a specific method onto the evaluation stack.
+        /// </summary>
+        private void Ldftn(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var methodInfo = (MethodInfo)instruction.Operand;
+
+            var ptr = methodInfo.MethodHandle.GetFunctionPointer();
+
+            vCLRExecContext.StackPush(ptr);
+        }
+
+        /// <summary>
+        /// Pushes a null reference (type O) onto the evaluation stack.
+        /// </summary>
+        private void Ldnull(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            vCLRExecContext.StackPush(null);
+        }
+
+        /// <summary>
+        /// Pushes the value of a static field onto the evaluation stack.
+        /// </summary>
+        private void Ldsfld(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var fieldInfo = (FieldInfo)instruction.Operand;
+
+            var o1 = fieldInfo.GetValue(null);
+
+            vCLRExecContext.StackPush(o1);
         }
 
         /// <summary>

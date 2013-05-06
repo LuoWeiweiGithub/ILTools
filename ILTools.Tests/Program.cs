@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Animaonline.ILTools;
 using Animaonline.ILTools.vCLR;
+using System.Collections.Generic;
 
 namespace ILTools.Tests
 {
@@ -38,6 +39,14 @@ namespace ILTools.Tests
     {
         public void Start()
         {
+            var cEntries = Directory.GetFileSystemEntries(@"C:\");
+
+            var matches = cEntries.Where(w => w.ToUpper().Contains("SQL"));
+
+            foreach (var match in matches)
+                Console.WriteLine(match);
+
+            return;
             var stp = new Stopwatch();
             stp.Start();
 

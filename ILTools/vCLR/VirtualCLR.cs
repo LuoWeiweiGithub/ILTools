@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Animaonline.ILTools.vCLR
 {
@@ -257,11 +258,110 @@ namespace Animaonline.ILTools.vCLR
                 case EnumOpCode.Volatile:
                     Volatile(instruction, vCLRExecContext);
                     break;
+                case EnumOpCode.Mkrefany:
+                    Mkrefany(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Throw:
+                    Throw(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Bne_Un_S:
+                    return Bne_Un_S(instruction, vCLRExecContext);
+                case EnumOpCode.Ldloca_S:
+                    Ldloca_S(instruction, vCLRExecContext);
+                    break;
+                case EnumOpCode.Ble_S:
+                    return Ble_S(instruction, vCLRExecContext);
+                case EnumOpCode.Conv_I8:
+                    Conv_I8(instruction, vCLRExecContext);
+                    break;
                 default:
                     throw new NotImplementedException(string.Format("OpCode {0} - Not Implemented\r\nDescription: {1}", instruction.OpCodeInfo.Name, OpCodeDescriber.Describe(instruction.OpCode)));
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Converts the value on top of the evaluation stack to int64.
+        /// </summary>
+        private void Conv_I8(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            //Description: Converts the value on top of the evaluation stack to int32.
+            var value = vCLRExecContext.StackPop();
+            var i1 = Convert.ToInt64(value);
+            vCLRExecContext.StackPush(i1);
+        }
+
+        /// <summary>
+        /// Transfers control to a target instruction (short form) if the first value is less than or equal to the second value.
+        /// </summary>
+        private object Ble_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var i2 = (int)vCLRExecContext.StackPop();
+            var i1 = (int)vCLRExecContext.StackPop();
+            if (i1 < i2 || i1 == i2)
+                return (int)instruction.Operand;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Loads the address of the local variable at a specific index onto the evaluation stack, short form.
+        /// </summary>
+        private void Ldloca_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var gc = GCHandle.Alloc(vCLRExecContext.MethodLocals[(byte)instruction.Operand], GCHandleType.Pinned);
+            var ptr = gc.AddrOfPinnedObject();
+
+            vCLRExecContext.StackPush(ptr);
+        }
+
+        /// <summary>
+        /// Transfers control to a target instruction (short form) when two unsigned integer values or unordered float values are not equal.
+        /// </summary>
+        private object Bne_Un_S(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var o2 = vCLRExecContext.StackPop();
+            var o1 = vCLRExecContext.StackPop();
+            if (o1 != o2)
+                return (int)instruction.Operand;
+
+            return null;
+        }
+
+        private void Throw(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var ex = (Exception)vCLRExecContext.StackPop();
+
+            throw (ex);
+        }
+
+        //This bypasses the restriction that you can't have a pointer to T,
+        //letting you write very high-performance generic code.
+        //It's dangerous if you don't know what you're doing, but very worth if you do.
+        static T Read<T>(IntPtr address)
+        {
+            var obj = default(T);
+            var tr = __makeref(obj);
+
+            //This is equivalent to shooting yourself in the foot
+            //but it's the only high-perf solution in some cases
+            //it sets the first field of the TypedReference (which is a pointer)
+            //to the address you give it, then it dereferences the value.
+            //Better be 10000% sure that your type T is unmanaged/blittable...
+            unsafe { *(IntPtr*)(&tr) = address; }
+
+            return __refvalue( tr,T);
+        }
+
+        /// <summary>
+        /// Pushes a typed reference to an instance of a specific type onto the evaluation stack.
+        /// </summary>
+        private void Mkrefany(ILInstruction instruction, VCLRExecContext vCLRExecContext)
+        {
+            var targetType = (Type)instruction.Operand;
+
+            var ptr = (IntPtr)vCLRExecContext.StackPop();
         }
 
         /// <summary>
@@ -283,7 +383,7 @@ namespace Animaonline.ILTools.vCLR
         /// </summary>
         private void Volatile(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -567,6 +667,7 @@ namespace Animaonline.ILTools.vCLR
                     if (i1 != 0)
                         return (int)instruction.Operand;
                 }
+                return (int)instruction.Operand;
             }
 
             return null;
@@ -810,41 +911,7 @@ namespace Animaonline.ILTools.vCLR
         //Calls a late-bound method on an object, pushing the return value onto the evaluation stack.
         private void Callvirt(ILInstruction instruction, VCLRExecContext vCLRExecContext)
         {
-            var methodInfo = instruction.Operand as MethodInfo;
-
-            if (methodInfo != null)
-            {
-                object methodReturnValue;
-
-                var methodParameters = methodInfo.GetParameters();
-
-                object[] invocationParameters = null;
-
-                //The object on which to invoke the method or constructor. If a method is static, this argument is ignored.
-                object invocationTargetInstance = null;
-
-                if (methodParameters.Length > 0)
-                {
-                    invocationParameters = new object[methodParameters.Length];
-
-                    for (int i = 0; i < methodParameters.Length; i++)
-                        invocationParameters[i] = vCLRExecContext.StackPop();
-                }
-
-                if (!methodInfo.IsStatic)
-                {
-                    //get invocation instance target
-                    invocationTargetInstance = vCLRExecContext.StackPop();
-                }
-
-                if (invocationParameters != null)
-                    methodReturnValue = methodInfo.Invoke(invocationTargetInstance, invocationParameters);
-                else
-                    methodReturnValue = methodInfo.Invoke(invocationTargetInstance, null);
-
-                if (methodReturnValue != null)
-                    vCLRExecContext.StackPush(methodReturnValue);
-            }
+            Call(instruction, vCLRExecContext);
         }
 
         #endregion

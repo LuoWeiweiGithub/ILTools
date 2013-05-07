@@ -28,7 +28,7 @@ namespace ILTools.Tests
             Console.ReadLine();
 
             //execute the instructions inside the virtual CLR.
-            var v_clr = new VirtualCLR(vCLRScope.Class);
+            var v_clr = new VirtualCLR(vCLRScope.Global);
             v_clr.ExecuteILMethod(methodIL);
         }
     }
@@ -36,13 +36,14 @@ namespace ILTools.Tests
     public class FieldsTest
     {
         void Main()
-        { 
+        {
             var fieldValue = Console.ReadLine();
 
             setField(fieldValue);
 
             printField();
-        } 
+        }
+
         public object field;
 
         public void setField(object value)

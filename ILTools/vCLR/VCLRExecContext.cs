@@ -18,9 +18,18 @@ namespace Animaonline.ILTools.vCLR
         #region Public Properties
 
         public MethodILInfo MethodIL { get; set; }
+        public object[] Arguments { get; set; }
         public object ObjectInstance;
         public Stack<object> EvaluationStack { get; set; }
         public object[] MethodLocals { get; set; }
+
+        public bool HasArguments
+        {
+            get
+            {
+                return Arguments != null;
+            }
+        }
 
         public bool HasObjectInstance
         {

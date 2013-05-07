@@ -21,7 +21,7 @@ namespace ILTools.Tests
         {
             Console.Title = "vCLR - (compile in Release mode for best performance.)";
 
-            var methodInfo = typeof(TestClass).GetMethod("Benchmark");
+            var methodInfo = typeof(FieldsTest).GetMethod("Main", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             var methodIL = methodInfo.GetInstructions();
 
             Console.WriteLine("Press any key to execute");
@@ -37,11 +37,18 @@ namespace ILTools.Tests
     {
         void Main()
         {
+            argsTest("string", 1989, true);
+            return;
             var fieldValue = Console.ReadLine();
 
             setField(fieldValue);
 
             printField();
+        }
+
+        private void argsTest(string a, int b, bool c)
+        {
+            Console.WriteLine("a:{0}\r\nb:{1}\r\nc:{2}", a, b, c);
         }
 
         public object field;

@@ -37,13 +37,17 @@ namespace Animaonline.ILTools.vCLR
         /// </summary>
         /// <param name="methodILContext">Instructions to execute</param>
         /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
-        public void ExecuteILMethod(MethodILInfo methodILContext, Stack<object> callerEvaluationStack = null)
+        public void ExecuteILMethod(MethodILInfo methodILContext, Stack<object> callerEvaluationStack = null, object[] arguments = null)
         {
             Console.WriteLine("\r\n--Executing Instructions--\r\n");
             foreach (var instruction in methodILContext.Instructions)
                 Console.WriteLine(instruction);
 
+            //TODO: Set locals boundaries
             var vCLRExecContext = new VCLRExecContext(methodILContext);
+
+            if (arguments != null)
+                vCLRExecContext.Arguments = arguments;
 
             var position = new int();
 
@@ -504,7 +508,7 @@ namespace Animaonline.ILTools.vCLR
 
         private void Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
         {
-            if (vCLRExecContext.MethodIL != null)
+            if (!vCLRExecContext.HasArguments)
             {
                 //get 'this' instance context if not already done
                 if (!vCLRExecContext.HasObjectInstance)
@@ -512,25 +516,29 @@ namespace Animaonline.ILTools.vCLR
 
                 vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
             }
+            else //has arguments
+            {
+                vCLRExecContext.StackPush(vCLRExecContext.Arguments[0]);
+            }
         }
 
         private void Ldarg_1(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
         {
-            var o1 = callerEvaluationStack.Reverse().ToArray()[0];
+            var o1 = vCLRExecContext.Arguments[0];
 
             vCLRExecContext.StackPush(o1);
         }
 
         private void Ldarg_2(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
         {
-            var o1 = callerEvaluationStack.Reverse().ToArray()[1];
+            var o1 = vCLRExecContext.Arguments[1];
 
             vCLRExecContext.StackPush(o1);
         }
 
         private void Ldarg_3(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
         {
-            var o1 = callerEvaluationStack.Reverse().ToArray()[2];
+            var o1 = vCLRExecContext.Arguments[2];
 
             vCLRExecContext.StackPush(o1);
         }
@@ -749,61 +757,56 @@ namespace Animaonline.ILTools.vCLR
             //The object on which to invoke the method or constructor. If a method is static, this argument is ignored.
             object invocationTargetInstance = null;
 
-            if (methodInfo != null)
+
+            if (Scope == vCLRScope.Class)
             {
-                if (Scope == vCLRScope.Class)
+                //check if the target method resides in the same class as the entry method
+                if (ownerMethod.DeclaringType == methodInfo.DeclaringType)
                 {
-                    //check if the target method resides in the same class as the entry method
-                    if (ownerMethod.DeclaringType.Equals(methodInfo.DeclaringType))
+                    //go deeper
+
+                    if (methodParameters.Length > 0)
                     {
-                        //go deeper
+                        invocationParameters = new object[methodParameters.Length];
 
-                        if (methodParameters.Length > 0)
-                        {
-                            invocationParameters = new object[methodParameters.Length];
-
-                            for (int i = methodParameters.Length - 1; i >= 0; i--)
-                                invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
-
-                            foreach (var param in invocationParameters)
-                                vCLRExecContext.StackPush(param);
-                        }
-
-                        if (!methodInfo.IsStatic)
-                        {
-                            //get invocation instance target
-                            invocationTargetInstance = vCLRExecContext.StackPop();
-                        }
-
-                        ExecuteILMethod(methodInfo.GetInstructions(), vCLRExecContext.EvaluationStack);
-                        return;
+                        for (int i = methodParameters.Length - 1; i >= 0; i--)
+                            invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
                     }
+
+                    if (!methodInfo.IsStatic)
+                    {
+                        //get invocation instance target
+                        invocationTargetInstance = vCLRExecContext.StackPop();
+                    }
+
+                    ExecuteILMethod(methodInfo.GetInstructions(), vCLRExecContext.EvaluationStack, invocationParameters);
+                    return;
                 }
-
-                object methodReturnValue;
-
-                if (methodParameters.Length > 0)
-                {
-                    invocationParameters = new object[methodParameters.Length];
-
-                    for (int i = methodParameters.Length - 1; i >= 0; i--)
-                        invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
-                }
-
-                if (!methodInfo.IsStatic)
-                {
-                    //get invocation instance target
-                    invocationTargetInstance = vCLRExecContext.StackPop();
-                }
-
-                if (invocationParameters != null)
-                    methodReturnValue = methodInfo.Invoke(invocationTargetInstance, invocationParameters);
-                else
-                    methodReturnValue = methodInfo.Invoke(invocationTargetInstance, null);
-
-                if (methodReturnValue != null)
-                    vCLRExecContext.StackPush(methodReturnValue);
             }
+
+            object methodReturnValue;
+
+            if (methodParameters.Length > 0)
+            {
+                invocationParameters = new object[methodParameters.Length];
+
+                for (int i = methodParameters.Length - 1; i >= 0; i--)
+                    invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
+            }
+
+            if (!methodInfo.IsStatic)
+            {
+                //get invocation instance target
+                invocationTargetInstance = vCLRExecContext.StackPop();
+            }
+
+            if (invocationParameters != null)
+                methodReturnValue = methodInfo.Invoke(invocationTargetInstance, invocationParameters);
+            else
+                methodReturnValue = methodInfo.Invoke(invocationTargetInstance, null);
+
+            if (methodReturnValue != null)
+                vCLRExecContext.StackPush(methodReturnValue);
         }
 
         //Calls a late-bound method on an object, pushing the return value onto the evaluation stack.

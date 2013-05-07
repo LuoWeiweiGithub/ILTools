@@ -36,8 +36,8 @@ namespace Animaonline.ILTools.vCLR
         /// Executes a list of IL instructions.
         /// </summary>
         /// <param name="methodILContext">Instructions to execute</param>
-        /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
-        public void ExecuteILMethod(MethodILInfo methodILContext, Stack<object> callerEvaluationStack = null, object[] arguments = null)
+        /// <param name="callerContext">A reference to caller's context</param>
+        public void ExecuteILMethod(MethodILInfo methodILContext, VCLRExecContext callerContext = null)
         {
             Console.WriteLine("\r\n--Executing Instructions--\r\n");
             foreach (var instruction in methodILContext.Instructions)
@@ -46,8 +46,8 @@ namespace Animaonline.ILTools.vCLR
             //TODO: Set locals boundaries
             var vCLRExecContext = new VCLRExecContext(methodILContext);
 
-            if (arguments != null)
-                vCLRExecContext.Arguments = arguments;
+            if (callerContext != null && callerContext.Arguments != null)
+                vCLRExecContext.Arguments = callerContext.Arguments;
 
             var position = new int();
 
@@ -58,7 +58,7 @@ namespace Animaonline.ILTools.vCLR
             {
                 var instruction = methodILContext.Instructions[position++];
 
-                object targetOffset = ExecuteInstruction(instruction, vCLRExecContext, callerEvaluationStack);
+                object targetOffset = ExecuteInstruction(instruction, vCLRExecContext, callerContext);
 
                 //branch if requested
                 if (targetOffset != null)
@@ -78,16 +78,16 @@ namespace Animaonline.ILTools.vCLR
         /// </summary>
         /// <param name="instruction">The instruction to execute</param>
         /// <param name="vCLRExecContext">The context of the executed method</param>
-        /// <param name="callerEvaluationStack">Caller's evaluation stack (if any)</param>
+        /// <param name="callerContext">A reference to caller's context</param>
         /// <returns>Returns an offset (if branching was requested)</returns>
-        private object ExecuteInstruction(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack = null)
+        private object ExecuteInstruction(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext = null)
         {
             switch (instruction.OpCode)
             {
                 case EnumOpCode.Nop:
                     break; //do nothing
                 case EnumOpCode.Ret: //Returns from the current method, pushing a return value (if present) from the callee's evaluation stack onto the caller's evaluation stack.
-                    Ret(instruction, vCLRExecContext, callerEvaluationStack);
+                    Ret(instruction, vCLRExecContext, callerContext);
                     break;
                 case EnumOpCode.Blt:
                     Blt(instruction, vCLRExecContext);
@@ -189,16 +189,16 @@ namespace Animaonline.ILTools.vCLR
                     Callvirt(instruction, vCLRExecContext);
                     break;
                 case EnumOpCode.Ldarg_0:
-                    Ldarg_0(instruction, vCLRExecContext, callerEvaluationStack);
+                    Ldarg_0(instruction, vCLRExecContext, callerContext);
                     break;
                 case EnumOpCode.Ldarg_1:
-                    Ldarg_1(instruction, vCLRExecContext, callerEvaluationStack);
+                    Ldarg_1(instruction, vCLRExecContext, callerContext);
                     break;
                 case EnumOpCode.Ldarg_2:
-                    Ldarg_2(instruction, vCLRExecContext, callerEvaluationStack);
+                    Ldarg_2(instruction, vCLRExecContext, callerContext);
                     break;
                 case EnumOpCode.Ldarg_3:
-                    Ldarg_3(instruction, vCLRExecContext, callerEvaluationStack);
+                    Ldarg_3(instruction, vCLRExecContext, callerContext);
                     break;
                 case EnumOpCode.Box:
                     Box(instruction, vCLRExecContext);
@@ -506,37 +506,33 @@ namespace Animaonline.ILTools.vCLR
             vCLRExecContext.StackPush((object)o1);
         }
 
-        private void Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        private void Ldarg_0(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext)
         {
-            if (!vCLRExecContext.HasArguments)
-            {
-                //get 'this' instance context if not already done
-                if (!vCLRExecContext.HasObjectInstance)
-                    vCLRExecContext.ObjectInstance = Activator.CreateInstance(vCLRExecContext.MethodIL.MethodInfo.DeclaringType);
+            if (callerContext != null && callerContext.HasObjectInstance)
+                vCLRExecContext.ObjectInstance = callerContext.ObjectInstance;
 
-                vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
-            }
-            else //has arguments
-            {
-                vCLRExecContext.StackPush(vCLRExecContext.Arguments[0]);
-            }
+            //get 'this' instance context if not already done
+            if (!vCLRExecContext.HasObjectInstance)
+                vCLRExecContext.ObjectInstance = Activator.CreateInstance(vCLRExecContext.MethodIL.MethodInfo.DeclaringType);
+
+            vCLRExecContext.StackPush(vCLRExecContext.ObjectInstance);
         }
 
-        private void Ldarg_1(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        private void Ldarg_1(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext)
         {
             var o1 = vCLRExecContext.Arguments[0];
 
             vCLRExecContext.StackPush(o1);
         }
 
-        private void Ldarg_2(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        private void Ldarg_2(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext)
         {
             var o1 = vCLRExecContext.Arguments[1];
 
             vCLRExecContext.StackPush(o1);
         }
 
-        private void Ldarg_3(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        private void Ldarg_3(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext)
         {
             var o1 = vCLRExecContext.Arguments[2];
 
@@ -691,15 +687,15 @@ namespace Animaonline.ILTools.vCLR
             vCLRExecContext.StackPush((int)instruction.Operand);
         }
 
-        private void Ret(ILInstruction instruction, VCLRExecContext vCLRExecContext, Stack<object> callerEvaluationStack)
+        private void Ret(ILInstruction instruction, VCLRExecContext vCLRExecContext, VCLRExecContext callerContext)
         {
             if (vCLRExecContext.EvaluationStack.Count > 0)
             {
-                if (callerEvaluationStack != null)
+                if (callerContext != null)
                 {
                     var retVal = vCLRExecContext.StackPop();
 
-                    callerEvaluationStack.Push(retVal);
+                    callerContext.StackPush(retVal);
                 }
             }
         }
@@ -771,6 +767,8 @@ namespace Animaonline.ILTools.vCLR
 
                         for (int i = methodParameters.Length - 1; i >= 0; i--)
                             invocationParameters[i] = vCLRExecContext.StackPop(); //Convert.ChangeType(vCLRExecContext.StackPop(), methodParameters[i].ParameterType);
+
+                        vCLRExecContext.Arguments = invocationParameters;
                     }
 
                     if (!methodInfo.IsStatic)
@@ -779,7 +777,7 @@ namespace Animaonline.ILTools.vCLR
                         invocationTargetInstance = vCLRExecContext.StackPop();
                     }
 
-                    ExecuteILMethod(methodInfo.GetInstructions(), vCLRExecContext.EvaluationStack, invocationParameters);
+                    ExecuteILMethod(methodInfo.GetInstructions(), vCLRExecContext);
                     return;
                 }
             }

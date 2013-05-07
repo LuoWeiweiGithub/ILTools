@@ -36,21 +36,13 @@ namespace ILTools.Tests
     public class FieldsTest
     {
         void Main()
-        {
-            argsTest("string", 1989, true);
-            return;
+        { 
             var fieldValue = Console.ReadLine();
 
             setField(fieldValue);
 
             printField();
-        }
-
-        private void argsTest(string a, int b, bool c)
-        {
-            Console.WriteLine("a:{0}\r\nb:{1}\r\nc:{2}", a, b, c);
-        }
-
+        } 
         public object field;
 
         public void setField(object value)
